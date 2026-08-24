@@ -30,7 +30,13 @@ docker run -d -p 3000:3000 -e GEMINI_API_KEY="your-key" -v pos_data:/app/data in
 docker-compose up -d
 ```
 
-### 5. Google Cloud Run
+### 5. Vercel Deployment
+```bash
+# Using Vercel CLI
+vercel --prod
+```
+
+### 6. Google Cloud Run
 ```bash
 gcloud run deploy innovista-pos \
   --source . \

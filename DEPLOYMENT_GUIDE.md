@@ -63,6 +63,18 @@ APP_URL=http://localhost:3000
 
 # Google Gemini API Key (Server-Side Secret)
 GEMINI_API_KEY=AIzaSy...
+
+# AWS RDS / Aurora PostgreSQL Cluster Credentials
+innovistapos_AWS_ACCOUNT_ID="041436772015"
+innovistapos_AWS_REGION="us-east-1"
+innovistapos_AWS_RESOURCE_ARN="arn:aws:rds:us-east-1:041436772015:cluster:innovistaposdbaws"
+innovistapos_AWS_ROLE_ARN="arn:aws:iam::041436772015:role/Vercel/access-innovistaposdbaws"
+innovistapos_PGDATABASE="postgres"
+innovistapos_PGHOST="innovistaposdbaws.cluster-cct88acowp78.us-east-1.rds.amazonaws.com"
+innovistapos_PGPORT="5432"
+innovistapos_PGSSLMODE="require"
+innovistapos_PGUSER="postgres"
+innovistapos_PGPASSWORD=""
 ```
 
 > ⚠️ **Security Notice**: Never expose `GEMINI_API_KEY` to client-side bundles. The backend proxies all AI calls through `/api/gemini` routes.

@@ -20,8 +20,20 @@ Follow these simple steps to deploy this full-stack application (Express + Vite 
    - **Output Directory**: `dist`
    - **Install Command**: `npm install`
 
-4. **Environment Variables** (If any):
-   - Add any environment variables defined in `.env.example` in the **Environment Variables** section on Vercel.
+4. **Environment Variables**:
+   Add the following environment variables in the **Environment Variables** section on Vercel:
+   ```env
+   innovistapos_AWS_ACCOUNT_ID="041436772015"
+   innovistapos_AWS_REGION="us-east-1"
+   innovistapos_AWS_RESOURCE_ARN="arn:aws:rds:us-east-1:041436772015:cluster:innovistaposdbaws"
+   innovistapos_AWS_ROLE_ARN="arn:aws:iam::041436772015:role/Vercel/access-innovistaposdbaws"
+   innovistapos_PGDATABASE="postgres"
+   innovistapos_PGHOST="innovistaposdbaws.cluster-cct88acowp78.us-east-1.rds.amazonaws.com"
+   innovistapos_PGPORT="5432"
+   innovistapos_PGSSLMODE="require"
+   innovistapos_PGUSER="postgres"
+   innovistapos_PGPASSWORD=""
+   ```
 
 5. **Deploy**:
    - Click **Deploy**. Vercel will build and deploy your Express backend and Vite React frontend in seconds.

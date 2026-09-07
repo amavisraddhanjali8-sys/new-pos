@@ -100,7 +100,449 @@
     "min_distance_km": 10,
     "base_fuel_rate": 350
   },
-  "locations": [],
+  "locations": [
+    {
+      "id": "loc-cmb-01",
+      "name": "Colombo 01 (Fort)",
+      "district": "Colombo",
+      "region": "Western Province",
+      "distance_km": 5,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-cmb-03",
+      "name": "Colombo 03 (Kollupitiya)",
+      "district": "Colombo",
+      "region": "Western Province",
+      "distance_km": 7,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-cmb-07",
+      "name": "Colombo 07 (Cinnamon Gardens)",
+      "district": "Colombo",
+      "region": "Western Province",
+      "distance_km": 8,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-cmb-deh",
+      "name": "Dehiwala-Mount Lavinia",
+      "district": "Colombo",
+      "region": "Western Province",
+      "distance_km": 14,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-cmb-nug",
+      "name": "Nugegoda Metro",
+      "district": "Colombo",
+      "region": "Western Province",
+      "distance_km": 12,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-cmb-mah",
+      "name": "Maharagama",
+      "district": "Colombo",
+      "region": "Western Province",
+      "distance_km": 16,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-cmb-mor",
+      "name": "Moratuwa Commercial",
+      "district": "Colombo",
+      "region": "Western Province",
+      "distance_km": 22,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-cmb-hom",
+      "name": "Homagama Hub",
+      "district": "Colombo",
+      "region": "Western Province",
+      "distance_km": 25,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-cmb-avi",
+      "name": "Avissawella Industrial Zone",
+      "district": "Colombo",
+      "region": "Western Province",
+      "distance_km": 55,
+      "toll_charge": 0,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "id": "loc-gmp-city",
+      "name": "Gampaha Town",
+      "district": "Gampaha",
+      "region": "Western Province",
+      "distance_km": 32,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-gmp-neg",
+      "name": "Negombo Coastal City",
+      "district": "Gampaha",
+      "region": "Western Province",
+      "distance_km": 38,
+      "toll_charge": 300,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-gmp-jae",
+      "name": "Ja-Ela Commercial Zone",
+      "district": "Gampaha",
+      "region": "Western Province",
+      "distance_km": 24,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-gmp-wat",
+      "name": "Wattala Mabola",
+      "district": "Gampaha",
+      "region": "Western Province",
+      "distance_km": 15,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-gmp-kel",
+      "name": "Kelaniya Industrial Belt",
+      "district": "Gampaha",
+      "region": "Western Province",
+      "distance_km": 12,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-gmp-biy",
+      "name": "Biyagama FTZ Export Zone",
+      "district": "Gampaha",
+      "region": "Western Province",
+      "distance_km": 25,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-kal-city",
+      "name": "Kalutara Town",
+      "district": "Kalutara",
+      "region": "Western Province",
+      "distance_km": 44,
+      "toll_charge": 350,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-kal-pan",
+      "name": "Panadura Commercial",
+      "district": "Kalutara",
+      "region": "Western Province",
+      "distance_km": 28,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-kal-hor",
+      "name": "Horana Industrial Zone",
+      "district": "Kalutara",
+      "region": "Western Province",
+      "distance_km": 42,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-kdy-city",
+      "name": "Kandy Metro City",
+      "district": "Kandy",
+      "region": "Central Province",
+      "distance_km": 115,
+      "toll_charge": 400,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "id": "loc-kdy-per",
+      "name": "Peradeniya Suburb",
+      "district": "Kandy",
+      "region": "Central Province",
+      "distance_km": 110,
+      "toll_charge": 400,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "id": "loc-kdy-gam",
+      "name": "Gampola Town",
+      "district": "Kandy",
+      "region": "Central Province",
+      "distance_km": 125,
+      "toll_charge": 400,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "id": "loc-mtl-city",
+      "name": "Matale Town",
+      "district": "Matale",
+      "region": "Central Province",
+      "distance_km": 145,
+      "toll_charge": 400,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "id": "loc-mtl-dam",
+      "name": "Dambulla Metro Hub",
+      "district": "Matale",
+      "region": "Central Province",
+      "distance_km": 165,
+      "toll_charge": 400,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-nue-city",
+      "name": "Nuwara Eliya Hill City",
+      "district": "Nuwara Eliya",
+      "region": "Central Province",
+      "distance_km": 168,
+      "toll_charge": 400,
+      "risk_level": "HIGH"
+    },
+    {
+      "id": "loc-nue-hat",
+      "name": "Hatton Commercial",
+      "district": "Nuwara Eliya",
+      "region": "Central Province",
+      "distance_km": 135,
+      "toll_charge": 0,
+      "risk_level": "HIGH"
+    },
+    {
+      "id": "loc-gle-city",
+      "name": "Galle Fort & Harbor",
+      "district": "Galle",
+      "region": "Southern Province",
+      "distance_km": 125,
+      "toll_charge": 600,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-gle-hik",
+      "name": "Hikkaduwa Coastal Belt",
+      "district": "Galle",
+      "region": "Southern Province",
+      "distance_km": 110,
+      "toll_charge": 500,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-mat-city",
+      "name": "Matara City & Fort",
+      "district": "Matara",
+      "region": "Southern Province",
+      "distance_km": 160,
+      "toll_charge": 700,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-mat-wel",
+      "name": "Weligama Coastal Town",
+      "district": "Matara",
+      "region": "Southern Province",
+      "distance_km": 145,
+      "toll_charge": 650,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-hbt-city",
+      "name": "Hambantota Port City",
+      "district": "Hambantota",
+      "region": "Southern Province",
+      "distance_km": 235,
+      "toll_charge": 800,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-hbt-tan",
+      "name": "Tangalle Town",
+      "district": "Hambantota",
+      "region": "Southern Province",
+      "distance_km": 195,
+      "toll_charge": 750,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-kng-city",
+      "name": "Kurunegala Junction City",
+      "district": "Kurunegala",
+      "region": "North Western Province",
+      "distance_km": 95,
+      "toll_charge": 400,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-kng-kul",
+      "name": "Kuliyapitiya Town",
+      "district": "Kurunegala",
+      "region": "North Western Province",
+      "distance_km": 85,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-put-city",
+      "name": "Puttalam Town",
+      "district": "Puttalam",
+      "region": "North Western Province",
+      "distance_km": 135,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-put-chl",
+      "name": "Chilaw Coastal Zone",
+      "district": "Puttalam",
+      "region": "North Western Province",
+      "distance_km": 80,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-anp-city",
+      "name": "Anuradhapura Sacred City",
+      "district": "Anuradhapura",
+      "region": "North Central Province",
+      "distance_km": 205,
+      "toll_charge": 400,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-pol-city",
+      "name": "Polonnaruwa Kaduruwela",
+      "district": "Polonnaruwa",
+      "region": "North Central Province",
+      "distance_km": 220,
+      "toll_charge": 400,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-bad-city",
+      "name": "Badulla Town",
+      "district": "Badulla",
+      "region": "Uva Province",
+      "distance_km": 215,
+      "toll_charge": 400,
+      "risk_level": "HIGH"
+    },
+    {
+      "id": "loc-bad-ban",
+      "name": "Bandarawela Resort",
+      "district": "Badulla",
+      "region": "Uva Province",
+      "distance_km": 195,
+      "toll_charge": 400,
+      "risk_level": "HIGH"
+    },
+    {
+      "id": "loc-mng-city",
+      "name": "Monaragala Town",
+      "district": "Monaragala",
+      "region": "Uva Province",
+      "distance_km": 265,
+      "toll_charge": 400,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "id": "loc-rat-city",
+      "name": "Ratnapura Gem City",
+      "district": "Ratnapura",
+      "region": "Sabaragamuwa Province",
+      "distance_km": 88,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-keg-city",
+      "name": "Kegalle Town",
+      "district": "Kegalle",
+      "region": "Sabaragamuwa Province",
+      "distance_km": 78,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-jaf-city",
+      "name": "Jaffna Peninsula Metro",
+      "district": "Jaffna",
+      "region": "Northern Province",
+      "distance_km": 395,
+      "toll_charge": 400,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "id": "loc-vav-city",
+      "name": "Vavuniya Hub",
+      "district": "Vavuniya",
+      "region": "Northern Province",
+      "distance_km": 260,
+      "toll_charge": 400,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-kil-city",
+      "name": "Kilinochchi Town",
+      "district": "Kilinochchi",
+      "region": "Northern Province",
+      "distance_km": 330,
+      "toll_charge": 400,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "id": "loc-mnr-city",
+      "name": "Mannar Town",
+      "district": "Mannar",
+      "region": "Northern Province",
+      "distance_km": 310,
+      "toll_charge": 0,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "id": "loc-trn-city",
+      "name": "Trincomalee Harbor Town",
+      "district": "Trincomalee",
+      "region": "Eastern Province",
+      "distance_km": 255,
+      "toll_charge": 400,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-btc-city",
+      "name": "Batticaloa City",
+      "district": "Batticaloa",
+      "region": "Eastern Province",
+      "distance_km": 315,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    },
+    {
+      "id": "loc-amp-city",
+      "name": "Ampara Town",
+      "district": "Ampara",
+      "region": "Eastern Province",
+      "distance_km": 320,
+      "toll_charge": 0,
+      "risk_level": "LOW"
+    }
+  ],
   "quotations": [],
   "branchPrices": [],
   "customerPrices": [],
@@ -153,7 +595,12 @@
         "is_default": false
       }
     ],
-    "invoice_footer_terms": "1. All prices are valid for 14 days from date of issue.\n2. 50% advance payment required upon order confirmation.\n3. Goods once sold are non-refundable unless verified for manufacturing defect within 7 days."
+    "invoice_footer_terms": "1. All prices are valid for 14 days from date of issue.\n2. 50% advance payment required upon order confirmation.\n3. Goods once sold are non-refundable unless verified for manufacturing defect within 7 days.",
+    "ho_backup_key": "HO-MASTER-EMERGENCY-2026-X89B",
+    "ho_backup_key_status": "Active",
+    "ho_backup_key_updated_at": "2026-09-07",
+    "ho_backup_key_updated_by": "Nishantha Perera (HO Super Admin)",
+    "ho_backup_key_notes": "Master emergency recovery key for resetting user accounts when standard recovery is unavailable."
   },
   "systemUsers": [
     {

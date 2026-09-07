@@ -531,8 +531,11 @@ export interface SiteLocation {
   name: string;
   district: string;
   distance_km: number;
-  est_travel_time_min: number;
-  is_remote: boolean;
+  est_travel_time_min?: number;
+  is_remote?: boolean;
+  region?: string;
+  toll_charge?: number;
+  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 export interface TransportCalculationInput {

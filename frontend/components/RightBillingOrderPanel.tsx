@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getSavedShortcutSettings, formatShortcutDisplay } from '../utils/shortcutDefaults';
 import { 
   ShoppingCart, 
@@ -37,6 +37,7 @@ import {
   Package
 } from 'lucide-react';
 import { DEFAULT_PACKED_WORKS } from '../data/defaultPackedWorks';
+import { INITIAL_LOCATIONS } from '../data/initialData';
 import { generateAndDownloadQuotationPDF } from '../utils/pdfExportEngine';
 import { PrintableQuotationModal } from './PrintableQuotationModal';
 import { Surcharge11CategoryModal } from './Surcharge11CategoryModal';
@@ -181,8 +182,54 @@ export const RightBillingOrderPanel: React.FC<RightBillingOrderPanelProps> = ({
   // --- Transport & Pre-designed Frames ---
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('v-lorry');
   const [deliveryDistanceKm, setDeliveryDistanceKm] = useState<number>(25);
-  const [deliveryLocation, setDeliveryLocation] = useState<string>('Colombo');
-  const [isDriverAllowance, setIsDriverAllowance] = useState<boolean>(true);
+  const [deliveryLocation, setDeliveryLocation] = useState<string>('Colombo 01 (Fort)');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('All');
+  const [isDriverAllowance, setIsDriverAllowance] = useState<boolean>(false);
+
+  // Effective locations list (fallback to INITIAL_LOCATIONS if prop is empty)
+  const effectiveLocations: SiteLocation[] = useMemo(() => {
+    return (locations && locations.length > 0) ? locations : INITIAL_LOCATIONS;
+  }, [locations]);
+
+  // Unique list of districts for the district filter
+  const availableDistricts = useMemo(() => {
+    const dSet = new Set<string>();
+    effectiveLocations.forEach(l => {
+      if (l.district) dSet.add(l.district);
+    });
+    return ['All Districts', ...Array.from(dSet).sort()];
+  }, [effectiveLocations]);
+
+  // Locations filtered by selected district
+  const filteredLocations = useMemo(() => {
+    if (!selectedDistrict || selectedDistrict === 'All' || selectedDistrict === 'All Districts') {
+      return effectiveLocations;
+    }
+    return effectiveLocations.filter(l => l.district === selectedDistrict);
+  }, [effectiveLocations, selectedDistrict]);
+
+  const handleDistrictFilterChange = (district: string) => {
+    setSelectedDistrict(district);
+    const matched = (district === 'All' || district === 'All Districts')
+      ? effectiveLocations
+      : effectiveLocations.filter(l => l.district === district);
+    if (matched.length > 0) {
+      const firstLoc = matched[0];
+      setDeliveryLocation(firstLoc.name);
+      setDeliveryDistanceKm(firstLoc.distance_km);
+    }
+  };
+
+  const handleLocationSelect = (locName: string) => {
+    setDeliveryLocation(locName);
+    const matchedLoc = effectiveLocations.find(l => l.name === locName);
+    if (matchedLoc) {
+      setDeliveryDistanceKm(matchedLoc.distance_km);
+      if (matchedLoc.district && selectedDistrict !== 'All' && selectedDistrict !== 'All Districts' && selectedDistrict !== matchedLoc.district) {
+        setSelectedDistrict(matchedLoc.district);
+      }
+    }
+  };
 
   // --- Other Service Charges ---
   const [fabricationCharge, setFabricationCharge] = useState<number>(0);
@@ -557,18 +604,17 @@ export const RightBillingOrderPanel: React.FC<RightBillingOrderPanelProps> = ({
     setCartItems(prev => prev.filter(item => item.id !== itemId));
   };
 
-  // Transport Calculation
+  // Transport Calculation: strictly base + (rate * km)
   const chosenVehicle = vehicles.find(v => v.id === selectedVehicleId) || vehicles[0] || {
     id: 'v-lorry',
     type: 'Medium Flatbed Lorry (5 Ton)',
-    base_charge: 12000,
-    per_km_rate: 140
+    base_charge: 7500,
+    per_km_rate: 250
   };
 
   const calculatedTransportCost = Math.round(
     (chosenVehicle.base_charge || 0) + 
-    (deliveryDistanceKm * (chosenVehicle.per_km_rate || 0)) +
-    (isDriverAllowance ? 3500 : 0)
+    (deliveryDistanceKm * (chosenVehicle.per_km_rate || 0))
   );
 
   // Financial Totals Calculation
@@ -1262,47 +1308,90 @@ export const RightBillingOrderPanel: React.FC<RightBillingOrderPanelProps> = ({
                 <Truck className="w-3.5 h-3.5 text-orange-500" />
                 <span className="text-xs font-bold text-slate-900">Delivery & Transport Fee</span>
               </div>
-              <span className="font-mono font-bold text-xs text-orange-600">
+              <span className="font-mono font-bold text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
                 Rs. {calculatedTransportCost.toLocaleString()}
               </span>
             </div>
 
-            <div className="space-y-1.5 text-xs">
-              <select
-                value={selectedVehicleId}
-                onChange={(e) => setSelectedVehicleId(e.target.value)}
-                className="w-full pos-input text-[11px]"
-              >
-                {vehicles.map(v => (
-                  <option key={v.id} value={v.id}>
-                    {v.type} — Base: Rs.{v.base_charge.toLocaleString()}
-                  </option>
-                ))}
-              </select>
+            <div className="space-y-2 text-xs">
+              {/* Vehicle Selection */}
+              <div>
+                <label className="text-[9px] text-slate-500 font-semibold block mb-0.5">Vehicle Fleet & Rates</label>
+                <select
+                  value={selectedVehicleId}
+                  onChange={(e) => setSelectedVehicleId(e.target.value)}
+                  className="w-full pos-input text-[11px]"
+                >
+                  {vehicles.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.type} — Base: Rs.{v.base_charge.toLocaleString()} | Rate: Rs.{v.per_km_rate}/KM
+                    </option>
+                  ))}
+                </select>
+              </div>
 
+              {/* District Filter & Manual KM Distance Input */}
               <div className="grid grid-cols-2 gap-1.5">
                 <div>
-                  <label className="text-[9px] text-slate-500 font-semibold block mb-0.5">Distance (KM)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={deliveryDistanceKm}
-                    onChange={(e) => setDeliveryDistanceKm(Math.max(1, parseFloat(e.target.value) || 0))}
-                    className="w-full pos-input font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="text-[9px] text-slate-500 font-semibold block mb-0.5">District</label>
+                  <label className="text-[9px] text-slate-500 font-semibold block mb-0.5">
+                    District Filter
+                  </label>
                   <select
-                    value={deliveryLocation}
-                    onChange={(e) => setDeliveryLocation(e.target.value)}
-                    className="w-full pos-input"
+                    value={selectedDistrict}
+                    onChange={(e) => handleDistrictFilterChange(e.target.value)}
+                    className="w-full pos-input text-[11px]"
                   >
-                    {locations.map(l => (
-                      <option key={l.id} value={l.name}>{l.name}</option>
+                    {availableDistricts.map(dist => (
+                      <option key={dist} value={dist}>{dist}</option>
                     ))}
                   </select>
                 </div>
+
+                <div>
+                  <label className="text-[9px] text-slate-500 font-semibold block mb-0.5">
+                    Distance (KM) <span className="text-slate-400 font-normal">(Manual Edit)</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={deliveryDistanceKm}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setDeliveryDistanceKm(isNaN(val) ? 0 : Math.max(0, val));
+                    }}
+                    className="w-full pos-input font-mono font-bold text-[11px] text-orange-700 bg-orange-50/40"
+                    placeholder="Enter KM"
+                  />
+                </div>
+              </div>
+
+              {/* Delivery Location / Town Selector */}
+              <div>
+                <label className="text-[9px] text-slate-500 font-semibold block mb-0.5">
+                  Delivery Destination / Town {selectedDistrict !== 'All' && selectedDistrict !== 'All Districts' && `(${selectedDistrict})`}
+                </label>
+                <select
+                  value={deliveryLocation}
+                  onChange={(e) => handleLocationSelect(e.target.value)}
+                  className="w-full pos-input text-[11px]"
+                >
+                  {filteredLocations.map(l => (
+                    <option key={l.id} value={l.name}>
+                      {l.name} — {l.distance_km} KM {l.district ? `[${l.district}]` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Instant Formula Breakdown: Base + (Rate * KM) */}
+              <div className="bg-slate-50 border border-slate-200 rounded p-1.5 flex items-center justify-between text-[10px] text-slate-600 font-mono">
+                <span className="text-slate-500">
+                  Base (Rs.{chosenVehicle.base_charge.toLocaleString()}) + ({deliveryDistanceKm} km × Rs.{chosenVehicle.per_km_rate}/km = Rs.{(deliveryDistanceKm * chosenVehicle.per_km_rate).toLocaleString()})
+                </span>
+                <span className="font-bold text-orange-600">
+                  = Rs.{calculatedTransportCost.toLocaleString()}
+                </span>
               </div>
             </div>
           </div>

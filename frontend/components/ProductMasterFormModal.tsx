@@ -202,6 +202,10 @@ export const ProductMasterFormModal: React.FC<ProductMasterFormModalProps> = ({
   const [slProvinceFilter, setSlProvinceFilter] = useState<string>('ALL');
   const [slRegionQuery, setSlRegionQuery] = useState<string>('');
 
+  // Form Submission Validation Feedback
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
+
   // State for adding custom key-value option surcharges
   const [newOptionCategory, setNewOptionCategory] = useState<string>('thickness_prices');
   const [newOptionKey, setNewOptionKey] = useState('');
@@ -728,23 +732,45 @@ export const ProductMasterFormModal: React.FC<ProductMasterFormModalProps> = ({
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
     }
+    setFormError(null);
+    setFormSuccess(null);
+
     const code = formData.product_code?.trim();
     const name = formData.product_name?.trim();
     const price = Number(formData.base_price);
 
-    if (!code || !name) {
-      alert('Please fill in required fields: Product Code and Product Name.');
+    if (!code) {
+      setActiveTab('general');
+      setFormError('Product Code (SKU) is required. Please provide a unique product code.');
+      return;
+    }
+    if (!name) {
+      setActiveTab('general');
+      setFormError('Product Commercial Title is required. Please provide a title for this master product.');
       return;
     }
     if (isNaN(price) || price < 0) {
-      alert('Base Price must be a valid non-negative number.');
+      setActiveTab('pricing');
+      setFormError('Company Base Price must be a valid non-negative number.');
       return;
     }
+
     try {
-      await onSubmit(formData);
-    } catch (err) {
+      await onSubmit({
+        ...formData,
+        product_code: code,
+        product_name: name,
+        base_price: price,
+        current_price: price,
+        cost_price: Number(formData.cost_price || 0),
+        min_selling_price: Number(formData.min_selling_price || 0),
+        unit_weight_kg: Number(formData.unit_weight_kg || 0)
+      });
+      setFormSuccess('Master product saved successfully!');
+    } catch (err: any) {
       console.error('Error saving master item:', err);
-      alert('Failed to save master product item: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      const errMsg = err instanceof Error ? err.message : 'Unknown error saving master product.';
+      setFormError('Failed to save master product item: ' + errMsg);
     }
   };
 
@@ -844,6 +870,31 @@ export const ProductMasterFormModal: React.FC<ProductMasterFormModalProps> = ({
           </div>
         </div>
 
+        {/* Validation & Feedback Banners */}
+        {formError && (
+          <div className="mx-6 mt-3 p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg flex items-center justify-between text-xs animate-in fade-in duration-200 shrink-0">
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+              <span className="font-semibold">{formError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setFormError(null)}
+              className="text-rose-400 hover:text-rose-700 p-1 rounded transition"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+        {formSuccess && (
+          <div className="mx-6 mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg flex items-center justify-between text-xs animate-in fade-in duration-200 shrink-0">
+            <div className="flex items-center space-x-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="font-semibold">{formSuccess}</span>
+            </div>
+          </div>
+        )}
+
         {/* Form Body Container */}
         <form onSubmit={handleSubmitForm} className="p-6 overflow-y-auto flex-1 space-y-6">
           {/* TAB 1: IDENTITY & CATEGORY */}
@@ -864,9 +915,11 @@ export const ProductMasterFormModal: React.FC<ProductMasterFormModalProps> = ({
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Product Code *</label>
                   <input
                     type="text"
-                    required
                     value={formData.product_code}
-                    onChange={(e) => setFormData(prev => ({ ...prev, product_code: e.target.value.toUpperCase() }))}
+                    onChange={(e) => {
+                      setFormError(null);
+                      setFormData(prev => ({ ...prev, product_code: e.target.value.toUpperCase() }));
+                    }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 font-mono font-semibold text-slate-900 text-xs focus:outline-none focus:border-orange-500 focus:bg-white transition"
                     placeholder="e.g. AL004"
                   />
@@ -877,9 +930,11 @@ export const ProductMasterFormModal: React.FC<ProductMasterFormModalProps> = ({
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Product Commercial Title *</label>
                   <input
                     type="text"
-                    required
                     value={formData.product_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, product_name: e.target.value }))}
+                    onChange={(e) => {
+                      setFormError(null);
+                      setFormData(prev => ({ ...prev, product_name: e.target.value }));
+                    }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-md px-3 py-1.5 font-semibold text-slate-900 text-xs focus:outline-none focus:border-orange-500 focus:bg-white transition"
                     placeholder="e.g. Heavy Duty Louver Profile 6m (Anodized White)"
                   />
@@ -941,6 +996,70 @@ export const ProductMasterFormModal: React.FC<ProductMasterFormModalProps> = ({
                   className="w-full bg-slate-50 border border-slate-200 rounded-md p-2 text-xs text-slate-900 focus:outline-none focus:border-orange-500 focus:bg-white transition"
                   placeholder="Detailed specifications, alloy grade (6063-T6), coating thickness (25 microns), usage instructions for architects and estimation engineers..."
                 />
+              </div>
+
+              {/* Product Visual Asset / Photo */}
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
+                <label className="block text-xs font-semibold text-slate-700">Product Visual Asset / Photo</label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="w-16 h-16 rounded-lg bg-slate-200 border border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
+                    {formData.image_url ? (
+                      <img
+                        src={formData.image_url}
+                        alt="Product preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[#E87F24] to-[#0F203C] flex items-center justify-center text-white font-mono font-black text-xs">
+                        {formData.product_code ? formData.product_code.substring(0, 3) : 'IMG'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1.5 w-full">
+                    <div className="flex items-center gap-2">
+                      <label className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md cursor-pointer transition inline-flex items-center space-x-1.5 shadow-2xs">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Photo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                if (typeof reader.result === 'string') {
+                                  setFormData(prev => ({ ...prev, image_url: reader.result as string }));
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                      {formData.image_url && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
+                          className="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold px-2.5 py-1.5 rounded-md transition"
+                        >
+                          Remove Photo
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Or paste image URL (https://...)"
+                      value={formData.image_url || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                      className="w-full bg-white border border-slate-200 rounded-md px-2.5 py-1 text-xs text-slate-800 focus:outline-none focus:border-orange-500 font-mono"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1024,10 +1143,12 @@ export const ProductMasterFormModal: React.FC<ProductMasterFormModalProps> = ({
                   <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider block">Company Base Price (LKR) *</span>
                   <input
                     type="number"
-                    required
                     step="0.01"
                     value={formData.base_price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, base_price: parseFloat(e.target.value) || 0 }))}
+                    onChange={(e) => {
+                      setFormError(null);
+                      setFormData(prev => ({ ...prev, base_price: parseFloat(e.target.value) || 0 }));
+                    }}
                     className="w-full bg-blue-50/50 border border-blue-200 rounded-xl px-3 py-2 text-slate-900 font-black text-lg focus:outline-none focus:border-blue-600"
                   />
                   <span className="text-[10px] text-slate-500 font-medium block">Default selling rate across branches</span>

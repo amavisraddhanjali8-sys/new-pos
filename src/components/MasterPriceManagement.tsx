@@ -82,7 +82,7 @@ import {
   PackedWorkPackage,
   CategoryConfig,
   SubCategoryItem
-} from '../types';
+} from '../../shared/types';
 import { fetchCategories } from '../services/api';
 import { calculateProductTrendPrediction } from '../utils/trendPredictionEngine';
 import { ProductPriceForecastModal } from './ProductPriceForecastModal';
@@ -93,7 +93,7 @@ import { ProductImageLightboxModal } from './ProductImageLightboxModal';
 import { ProductViewPosModal } from './ProductViewPosModal';
 import { resolveProductVariantPrice } from '../utils/priceVariantEngine';
 import { Truck, Printer, FileCheck, CreditCard, User, Phone, Mail, FileSpreadsheet, X, Ban } from 'lucide-react';
-import { SiteLocation, Vehicle, TransportRules, Quotation } from '../types';
+import { SiteLocation, Vehicle, TransportRules, Quotation } from '../../shared/types';
 
 export interface MainCategoryConfig {
   id: string;
@@ -373,6 +373,7 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [lightboxProduct, setLightboxProduct] = useState<Product | null>(null);
   const [viewPosProduct, setViewPosProduct] = useState<Product | null>(null);
+  const [viewPosInitialTab, setViewPosInitialTab] = useState<'view' | 'pos' | 'audit'>('view');
   const [barcodeProduct, setBarcodeProduct] = useState<Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [forecastModalProduct, setForecastModalProduct] = useState<Product | null>(null);
@@ -1478,8 +1479,33 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                           isSelected ? 'border-[#E87F24] ring-2 ring-[#E87F24]/30 bg-[#FEFDDF]/10' : 'border-slate-200 hover:border-orange-500'
                         }`}
                       >
-                        {/* 1. PRODUCT HEADER CONTAINER WITH BADGES */}
-                        <div className="relative h-16 w-full bg-slate-900 overflow-hidden group/img">
+                        {/* 1. PRODUCT HEADER CONTAINER WITH BADGES & IMAGE */}
+                        <div 
+                          onClick={() => setLightboxProduct(p)}
+                          className="relative h-20 w-full bg-slate-900 overflow-hidden group/img cursor-pointer"
+                          title="Click to enlarge high-resolution image & view full specifications"
+                        >
+                          {/* Image or Category Fallback Gradient */}
+                          {p.image_url ? (
+                            <img
+                              src={p.image_url}
+                              alt={p.product_name}
+                              className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-[#0F203C] via-slate-800 to-[#1E293B] flex items-center justify-center">
+                              <span className="font-mono font-black text-2xl text-white/20 select-none tracking-widest">
+                                {p.product_code.substring(0, 3)}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Gradient Vignette */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/40 pointer-events-none" />
+
                           {/* Top Badges with Checkbox Multi-Selector */}
                           <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between pointer-events-auto">
                             <div
@@ -1549,6 +1575,18 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                               <Maximize2 className="w-3 h-3 text-orange-600" />
                             </button>
 
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setViewPosInitialTab('view');
+                                setViewPosProduct(p);
+                              }}
+                              className="p-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded shadow transition hover:scale-105"
+                              title="View Full Product Specifications"
+                            >
+                              <Eye className="w-3 h-3" />
+                            </button>
+
                             <label
                               onClick={(e) => e.stopPropagation()}
                               className="p-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded shadow transition hover:scale-105 cursor-pointer"
@@ -1577,11 +1615,22 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                         </div>
 
                         {/* 2. CARD CONTENT BODY */}
-                        <div className="p-2.5 space-y-2 grow flex flex-col justify-between">
+                        <div 
+                          onClick={() => {
+                            setViewPosInitialTab('view');
+                            setViewPosProduct(p);
+                          }}
+                          className="p-2.5 space-y-2 grow flex flex-col justify-between cursor-pointer hover:bg-slate-50/60 transition-colors"
+                          title="Click to view detailed specifications & POS quick calculator"
+                        >
                           <div className="space-y-1">
                             <h4
-                              onClick={() => setEditingProduct(p)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingProduct(p);
+                              }}
                               className="text-xs font-bold text-slate-900 hover:text-orange-600 transition-colors line-clamp-1 cursor-pointer"
+                              title="Click to edit master product"
                             >
                               {p.product_name}
                             </h4>
@@ -1640,17 +1689,35 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                           {/* 1. PRIMARY ADD TO QUOTE BUTTON IN ORANGE */}
                           <button
                             onClick={() => handleQuickAddToQuote(p)}
-                            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-[11px] py-1 px-1.5 rounded transition-all flex items-center justify-center space-x-1 shadow-2xs group/quote"
+                            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-[11px] py-1 px-1.5 rounded transition-all flex items-center justify-center space-x-1 shadow-2xs group/quote cursor-pointer"
                             title="Add Item to Quotation Draft"
                           >
                             <ShoppingCart className="w-3 h-3 text-white group-hover/quote:scale-110 transition-transform" />
                             <span>Add to Quote</span>
                           </button>
 
-                          {/* 2. POS SPEC CALCULATOR BUTTON */}
+                          {/* 2. VIEW FULL PRODUCT SPECIFICATIONS (EYE BUTTON) */}
                           <button
-                            onClick={() => setViewPosProduct(p)}
-                            className="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-orange-400 border border-slate-700 flex items-center justify-center transition group/btn relative"
+                            onClick={() => {
+                              setViewPosInitialTab('view');
+                              setViewPosProduct(p);
+                            }}
+                            className="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-sky-300 border border-slate-700 flex items-center justify-center transition group/btn relative cursor-pointer"
+                            title="View Full Product Specifications & Master Details"
+                          >
+                            <Eye className="w-3 h-3" />
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover/btn:opacity-100 transition pointer-events-none whitespace-nowrap shadow-md z-30">
+                              View Specs
+                            </span>
+                          </button>
+
+                          {/* 3. POS SPEC CALCULATOR BUTTON */}
+                          <button
+                            onClick={() => {
+                              setViewPosInitialTab('pos');
+                              setViewPosProduct(p);
+                            }}
+                            className="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-orange-400 border border-slate-700 flex items-center justify-center transition group/btn relative cursor-pointer"
                             title="POS Quick Spec & Pricing Calculator"
                           >
                             <Zap className="w-3 h-3" />
@@ -1662,7 +1729,7 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                           {/* BARCODE LABEL BUTTON */}
                           <button
                             onClick={() => setBarcodeProduct(p)}
-                            className="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 flex items-center justify-center transition group/btn relative"
+                            className="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 flex items-center justify-center transition group/btn relative cursor-pointer"
                             title="Print Product Barcode Label"
                           >
                             <QrCode className="w-3 h-3" />
@@ -1671,10 +1738,10 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                             </span>
                           </button>
 
-                          {/* 3. ENLARGE LIGHTBOX & SPEC SHEET BUTTON */}
+                          {/* 4. ENLARGE LIGHTBOX & SPEC SHEET BUTTON */}
                           <button
                             onClick={() => setLightboxProduct(p)}
-                            className="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center transition group/btn relative"
+                            className="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center justify-center transition group/btn relative cursor-pointer"
                             title="Enlarge Spec Lightbox & Photo View"
                           >
                             <Maximize2 className="w-3 h-3" />
@@ -1683,10 +1750,10 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                             </span>
                           </button>
 
-                          {/* 4. SETTINGS & CONFIGURATION BUTTON */}
+                          {/* 5. SETTINGS & CONFIGURATION BUTTON */}
                           <button
                             onClick={() => setEditingProduct(p)}
-                            className="w-7 h-7 rounded bg-orange-600 hover:bg-orange-700 text-white border border-orange-500 flex items-center justify-center transition group/btn relative"
+                            className="w-7 h-7 rounded bg-orange-600 hover:bg-orange-700 text-white border border-orange-500 flex items-center justify-center transition group/btn relative cursor-pointer"
                             title="Settings & All Edits"
                           >
                             <Sliders className="w-3 h-3" />
@@ -1695,7 +1762,7 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                             </span>
                           </button>
 
-                          {/* 5. ACTIVATE / DEACTIVATE TOGGLE BUTTON */}
+                          {/* 6. ACTIVATE / DEACTIVATE TOGGLE BUTTON */}
                           <button
                             onClick={(e) => handleToggleProductStatus(p, e)}
                             className={`w-7 h-7 rounded flex items-center justify-center transition group/btn relative cursor-pointer border ${
@@ -1711,11 +1778,11 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                             </span>
                           </button>
 
-                          {/* 5. DELETE VARIANT BUTTON (HO Admin Only) */}
+                          {/* 7. DELETE VARIANT BUTTON (HO Admin Only) */}
                           {isHO && (
                             <button
                               onClick={() => setDeletingProduct(p)}
-                              className="w-7 h-7 rounded bg-rose-600 hover:bg-rose-700 text-white border border-rose-500 flex items-center justify-center transition group/btn relative"
+                              className="w-7 h-7 rounded bg-rose-600 hover:bg-rose-700 text-white border border-rose-500 flex items-center justify-center transition group/btn relative cursor-pointer"
                               title="Delete Product Variant"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -1769,15 +1836,36 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                               </td>
                               <td className="p-2.5">
                                 <div className="flex items-center space-x-2.5">
-                                  <div className="w-8 h-8 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px] shrink-0 font-mono">
-                                    {p.product_code.substring(0, 3)}
+                                  <div className="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px] shrink-0 font-mono overflow-hidden">
+                                    {p.image_url ? (
+                                      <img
+                                        src={p.image_url}
+                                        alt={p.product_name}
+                                        className="w-full h-full object-cover cursor-pointer"
+                                        onClick={() => setLightboxProduct(p)}
+                                        onError={(e) => {
+                                          (e.target as HTMLElement).style.display = 'none';
+                                        }}
+                                      />
+                                    ) : (
+                                      <span>{p.product_code.substring(0, 3)}</span>
+                                    )}
                                   </div>
                                   <div>
                                     <div className="font-bold text-slate-900 flex items-center space-x-1.5">
                                       <span className="font-mono text-[10px] text-orange-600 bg-orange-50 border border-orange-200 px-1 py-0.2 rounded">
                                         {p.product_code}
                                       </span>
-                                      <span className="truncate max-w-[200px]">{p.product_name}</span>
+                                      <span 
+                                        className="truncate max-w-[200px] hover:text-orange-600 cursor-pointer"
+                                        onClick={() => {
+                                          setViewPosInitialTab('view');
+                                          setViewPosProduct(p);
+                                        }}
+                                        title="Click to view complete specifications & details"
+                                      >
+                                        {p.product_name}
+                                      </span>
                                     </div>
                                     <p className="text-[10px] text-slate-500 truncate max-w-[220px]">
                                       {p.description || `High quality ${p.category} variant`}
@@ -1805,18 +1893,29 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => handleQuickAddToQuote(p)}
-                                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-2 py-1 rounded text-[11px] flex items-center space-x-1 transition shadow-2xs"
+                                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-2 py-1 rounded text-[11px] flex items-center space-x-1 transition shadow-2xs cursor-pointer"
                                   >
                                     <ShoppingCart className="w-3 h-3" />
                                     <span>Add to Quote</span>
                                   </button>
                                   <button
                                     type="button"
-                                    onClick={() => setViewPosProduct(p)}
-                                    className="p-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition"
-                                    title="Specs & POS Calc"
+                                    onClick={() => {
+                                      setViewPosInitialTab('view');
+                                      setViewPosProduct(p);
+                                    }}
+                                    className="p-1 bg-slate-100 hover:bg-sky-100 text-slate-700 hover:text-sky-700 rounded transition cursor-pointer"
+                                    title="View Complete Specifications & Master Details"
                                   >
                                     <Eye className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setBarcodeProduct(p)}
+                                    className="p-1 bg-slate-100 hover:bg-emerald-100 text-emerald-600 rounded transition"
+                                    title="Print Barcode Label"
+                                  >
+                                    <QrCode className="w-3.5 h-3.5" />
                                   </button>
                                   <button
                                     type="button"
@@ -1834,6 +1933,28 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                                   >
                                     <Sliders className="w-3.5 h-3.5" />
                                   </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleToggleProductStatus(p, e)}
+                                    className={`p-1 rounded transition ${
+                                      p.status === 'Active'
+                                        ? 'bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600'
+                                        : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600'
+                                    }`}
+                                    title={p.status === 'Active' ? 'Deactivate Product' : 'Activate Product'}
+                                  >
+                                    <Power className="w-3.5 h-3.5" />
+                                  </button>
+                                  {isHO && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setDeletingProduct(p)}
+                                      className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded transition"
+                                      title="Delete Product Variant"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -2232,6 +2353,7 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                   cost_price: formData.cost_price,
                   min_selling_price: formData.min_selling_price,
                   description: formData.description,
+                  image_url: formData.image_url || '',
                   profile_series: formData.profile_series,
                   lock_type: formData.lock_type,
                   handle_type: formData.handle_type,
@@ -2270,9 +2392,11 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                 await onAddProduct(newProd);
               }
               setShowAddProductModal(false);
-            } catch (e) {
+              setAddedToast(`Master product ${formData.product_code} successfully published!`);
+              setTimeout(() => setAddedToast(null), 3500);
+            } catch (e: any) {
               console.error('Add variant product error:', e);
-              alert('Failed to save variant product: ' + (e instanceof Error ? e.message : 'Unknown error'));
+              throw e;
             } finally {
               setIsSubmitting(false);
             }
@@ -2294,7 +2418,7 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
           onSubmit={async (formData) => {
             setIsSubmitting(true);
             try {
-              const updatePayload: Partial<Product> & { reason?: string; effectiveDate?: string } = {
+              const updatePayload: Partial<Product> & { reason?: string; effectiveDate?: string; new_price?: number } = {
                 product_code: formData.product_code,
                 product_name: formData.product_name,
                 category: formData.category,
@@ -2305,9 +2429,11 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                 unit_weight_kg: formData.unit_weight_kg,
                 base_price: formData.base_price,
                 current_price: formData.base_price,
+                new_price: formData.base_price,
                 cost_price: formData.cost_price,
                 min_selling_price: formData.min_selling_price,
                 description: formData.description,
+                image_url: formData.image_url || editingProduct.image_url || '',
                 profile_series: formData.profile_series,
                 lock_type: formData.lock_type,
                 handle_type: formData.handle_type,
@@ -2349,9 +2475,11 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
                 await onUpdatePrice(editingProduct.id, formData.base_price, formData.reason || 'Master Spec Update');
               }
               setEditingProduct(null);
-            } catch (e) {
+              setAddedToast(`Master product ${formData.product_code} updated successfully!`);
+              setTimeout(() => setAddedToast(null), 3500);
+            } catch (e: any) {
               console.error('Update master product error:', e);
-              alert('Failed to update product: ' + (e instanceof Error ? e.message : 'Unknown error'));
+              throw e;
             } finally {
               setIsSubmitting(false);
             }
@@ -2363,6 +2491,7 @@ export const MasterPriceManagement: React.FC<MasterPriceManagementProps> = ({
       <ProductViewPosModal
         product={viewPosProduct}
         isOpen={!!viewPosProduct}
+        initialTab={viewPosInitialTab}
         priceHistory={priceHistory}
         onClose={() => setViewPosProduct(null)}
         onProceedToQuotation={(item) => {

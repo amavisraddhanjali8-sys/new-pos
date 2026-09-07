@@ -37,7 +37,20 @@ interface ProductImageLightboxModalProps {
   isHO?: boolean;
 }
 
-const SAMPLE_PRESET_IMAGES: { title: string; url: string }[] = [];
+const SAMPLE_PRESET_IMAGES: { title: string; url: string }[] = [
+  {
+    title: 'Standard Aluminium Casement Window',
+    url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    title: 'Aluminium Sliding Glass Door Profile',
+    url: 'https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    title: 'Curtain Wall Facade Glazing',
+    url: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=800&q=80'
+  }
+];
 
 export const ProductImageLightboxModal: React.FC<ProductImageLightboxModalProps> = ({
   product,
@@ -56,7 +69,7 @@ export const ProductImageLightboxModal: React.FC<ProductImageLightboxModalProps>
   const [selectedTier, setSelectedTier] = useState<PricingTier>('Retail');
   const [showWarrantyModal, setShowWarrantyModal] = useState<boolean>(false);
 
-  const activeImage = product.image_url || SAMPLE_PRESET_IMAGES[0].url;
+  const activeImage = product.image_url || (SAMPLE_PRESET_IMAGES.length > 0 ? SAMPLE_PRESET_IMAGES[0].url : '');
   const basePrice = product.base_price || product.current_price || 0;
   const calc = resolveProductVariantPrice(product, { quantity: 1, customer_type: 'Retail Customer' });
 

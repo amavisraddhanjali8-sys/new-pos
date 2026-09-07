@@ -37,7 +37,20 @@ interface ProductImageLightboxModalProps {
   isHO?: boolean;
 }
 
-const SAMPLE_PRESET_IMAGES: { title: string; url: string }[] = [];
+const SAMPLE_PRESET_IMAGES: { title: string; url: string }[] = [
+  {
+    title: 'Standard Aluminium Casement Window',
+    url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    title: 'Aluminium Sliding Glass Door Profile',
+    url: 'https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    title: 'Curtain Wall Facade Glazing',
+    url: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=800&q=80'
+  }
+];
 
 export const ProductImageLightboxModal: React.FC<ProductImageLightboxModalProps> = ({
   product,
@@ -56,7 +69,7 @@ export const ProductImageLightboxModal: React.FC<ProductImageLightboxModalProps>
   const [selectedTier, setSelectedTier] = useState<PricingTier>('Retail');
   const [showWarrantyModal, setShowWarrantyModal] = useState<boolean>(false);
 
-  const activeImage = product.image_url || SAMPLE_PRESET_IMAGES[0].url;
+  const activeImage = product.image_url || (SAMPLE_PRESET_IMAGES.length > 0 ? SAMPLE_PRESET_IMAGES[0].url : '');
   const basePrice = product.base_price || product.current_price || 0;
   const calc = resolveProductVariantPrice(product, { quantity: 1, customer_type: 'Retail Customer' });
 
@@ -143,6 +156,65 @@ export const ProductImageLightboxModal: React.FC<ProductImageLightboxModalProps>
           </div>
         </div>
 
+        {/* Uploader / Image Management Dropdown Banner */}
+        {showUploader && (
+          <div className="bg-slate-800 border-b border-slate-700 p-4 shrink-0 transition-all">
+            <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h4 className="text-white text-xs font-bold flex items-center space-x-1.5">
+                  <Upload className="w-3.5 h-3.5 text-orange-400" />
+                  <span>Update Product Visual Asset</span>
+                </h4>
+                <p className="text-[11px] text-slate-400">
+                  Upload an image from your computer or paste an external image link
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <label className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer transition flex items-center space-x-1.5 shadow-sm">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Choose File</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+                </label>
+
+                <form onSubmit={handleApplyCustomUrl} className="flex items-center gap-1.5 flex-1 md:w-80">
+                  <input
+                    type="text"
+                    placeholder="https://..."
+                    value={customUrl}
+                    onChange={(e) => setCustomUrl(e.target.value)}
+                    className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 flex-1"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-1 rounded-lg transition"
+                  >
+                    Apply URL
+                  </button>
+                </form>
+
+                {product.image_url && onUpdateImage && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onUpdateImage(product.id, '');
+                      setShowUploader(false);
+                    }}
+                    className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-semibold px-2.5 py-1 rounded-lg transition"
+                  >
+                    Remove Photo
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Modal Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-y-auto grow">
           {/* Left Column: Interactive High-Res Image View & Zoom & Rotate */}
@@ -193,15 +265,38 @@ export const ProductImageLightboxModal: React.FC<ProductImageLightboxModalProps>
               </button>
             </div>
 
-            {/* Vector Specification Badge Display Container */}
-            <div className="grow flex items-center justify-center overflow-hidden my-auto p-4 relative min-h-[260px]">
-              <div className="bg-slate-900/80 border border-white/10 rounded-2xl p-8 text-center max-w-sm w-full space-y-3">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-[#E87F24] to-[#73A5CA] flex items-center justify-center text-white font-mono font-black text-xl shadow-lg">
-                  {product.product_code.substring(0, 3)}
+            {/* Vector Specification & High-Res Image Display Container */}
+            <div className="grow flex items-center justify-center overflow-hidden my-auto p-4 relative min-h-[320px]">
+              {product.image_url ? (
+                <div
+                  className="transition-transform duration-200 ease-out max-w-full max-h-full flex items-center justify-center"
+                  style={{
+                    transform: `scale(${zoomLevel}) rotate(${rotation}deg)`
+                  }}
+                >
+                  <img
+                    src={product.image_url}
+                    alt={product.product_name}
+                    className="max-h-[60vh] max-w-full object-contain rounded-xl shadow-2xl border border-white/20"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
                 </div>
-                <h3 className="text-white font-black text-lg">{product.product_name}</h3>
-                <p className="text-slate-400 text-xs font-mono">{product.product_code} • {product.category}</p>
-              </div>
+              ) : (
+                <div 
+                  className="bg-slate-900/80 border border-white/10 rounded-2xl p-8 text-center max-w-sm w-full space-y-3 transition-transform duration-200"
+                  style={{
+                    transform: `scale(${zoomLevel}) rotate(${rotation}deg)`
+                  }}
+                >
+                  <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[#E87F24] to-[#73A5CA] flex items-center justify-center text-white font-mono font-black text-2xl shadow-lg">
+                    {product.product_code.substring(0, 3)}
+                  </div>
+                  <h3 className="text-white font-black text-lg">{product.product_name}</h3>
+                  <p className="text-slate-400 text-xs font-mono">{product.product_code} • {product.category}</p>
+                </div>
+              )}
             </div>
           </div>
 

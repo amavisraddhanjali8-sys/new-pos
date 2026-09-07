@@ -51,19 +51,19 @@ export interface AwsDbConfig {
   connectionString?: string;
 }
 
-// Config retrieval with priority: innovistapos_* -> inposdbaws_* -> standard PG* -> defaults from AWS cluster
+// Config retrieval with priority: inposdbaws_* -> standard PG* -> defaults from AWS cluster
 export function getAwsDbConfig(): AwsDbConfig {
-  const host = process.env.innovistapos_PGHOST || process.env.inposdbaws_PGHOST || process.env.PGHOST || process.env.POSTGRES_HOST || 'innovistaposdbaws.cluster-cct88acowp78.us-east-1.rds.amazonaws.com';
-  const port = parseInt(process.env.innovistapos_PGPORT || process.env.inposdbaws_PGPORT || process.env.PGPORT || process.env.POSTGRES_PORT || '5432', 10);
-  const database = process.env.innovistapos_PGDATABASE || process.env.inposdbaws_PGDATABASE || process.env.PGDATABASE || process.env.POSTGRES_DATABASE || 'postgres';
-  const user = process.env.innovistapos_PGUSER || process.env.inposdbaws_PGUSER || process.env.PGUSER || process.env.POSTGRES_USER || 'postgres';
-  const password = process.env.innovistapos_PGPASSWORD || process.env.inposdbaws_PGPASSWORD || process.env.PGPASSWORD || process.env.POSTGRES_PASSWORD || process.env.AWS_RDS_PASSWORD || undefined;
-  const sslMode = process.env.innovistapos_PGSSLMODE || process.env.inposdbaws_PGSSLMODE || process.env.PGSSLMODE || 'require';
+  const host = process.env.inposdbaws_PGHOST || process.env.PGHOST || process.env.POSTGRES_HOST || 'innovistaposdbaws.cluster-cct88acowp78.us-east-1.rds.amazonaws.com';
+  const port = parseInt(process.env.inposdbaws_PGPORT || process.env.PGPORT || process.env.POSTGRES_PORT || '5432', 10);
+  const database = process.env.inposdbaws_PGDATABASE || process.env.PGDATABASE || process.env.POSTGRES_DATABASE || 'postgres';
+  const user = process.env.inposdbaws_PGUSER || process.env.PGUSER || process.env.POSTGRES_USER || 'postgres';
+  const password = process.env.inposdbaws_PGPASSWORD || process.env.PGPASSWORD || process.env.POSTGRES_PASSWORD || process.env.AWS_RDS_PASSWORD || undefined;
+  const sslMode = process.env.inposdbaws_PGSSLMODE || process.env.PGSSLMODE || 'require';
   
-  const accountId = process.env.innovistapos_AWS_ACCOUNT_ID || process.env.inposdbaws_AWS_ACCOUNT_ID || process.env.AWS_ACCOUNT_ID || '041436772015';
-  const region = process.env.innovistapos_AWS_REGION || process.env.inposdbaws_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
-  const resourceArn = process.env.innovistapos_AWS_RESOURCE_ARN || process.env.inposdbaws_AWS_RESOURCE_ARN || process.env.AWS_RDS_RESOURCE_ARN || 'arn:aws:rds:us-east-1:041436772015:cluster:innovistaposdbaws';
-  const roleArn = process.env.innovistapos_AWS_ROLE_ARN || process.env.inposdbaws_AWS_ROLE_ARN || process.env.AWS_IAM_ROLE_ARN || 'arn:aws:iam::041436772015:role/Vercel/access-innovistaposdbaws';
+  const accountId = process.env.inposdbaws_AWS_ACCOUNT_ID || process.env.AWS_ACCOUNT_ID || '041436772015';
+  const region = process.env.inposdbaws_AWS_REGION || process.env.AWS_REGION || 'us-east-1';
+  const resourceArn = process.env.inposdbaws_AWS_RESOURCE_ARN || process.env.AWS_RDS_RESOURCE_ARN || process.env.AWS_RESOURCE_ARN || 'arn:aws:rds:us-east-1:041436772015:cluster:innovistaposdbaws';
+  const roleArn = process.env.inposdbaws_AWS_ROLE_ARN || process.env.AWS_IAM_ROLE_ARN || process.env.AWS_ROLE_ARN || 'arn:aws:iam::041436772015:role/Vercel/access-innovistaposdbaws';
   const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
   return {

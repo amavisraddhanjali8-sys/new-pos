@@ -72,6 +72,7 @@ interface ProductViewPosModalProps {
   onUpdateProductData?: (id: string, productData: Partial<Product> & { reason?: string; effectiveDate?: string }) => Promise<void>;
   isHO?: boolean;
   priceHistory?: PriceHistory[];
+  initialTab?: 'view' | 'pos' | 'audit';
 }
 
 export const ProductViewPosModal: React.FC<ProductViewPosModalProps> = ({
@@ -83,11 +84,19 @@ export const ProductViewPosModal: React.FC<ProductViewPosModalProps> = ({
   onDeleteProduct,
   onUpdateProductData,
   isHO = true,
-  priceHistory = []
+  priceHistory = [],
+  initialTab = 'pos'
 }) => {
   if (!isOpen || !product) return null;
 
-  const [activeTab, setActiveTab] = useState<'view' | 'pos' | 'audit'>('pos');
+  const [activeTab, setActiveTab] = useState<'view' | 'pos' | 'audit'>(initialTab);
+
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab, product?.id]);
+
   const [showPrintSpecModal, setShowPrintSpecModal] = useState<boolean>(false);
   const [showPrintWarrantyModal, setShowPrintWarrantyModal] = useState<boolean>(false);
 
@@ -758,7 +767,7 @@ export const ProductViewPosModal: React.FC<ProductViewPosModalProps> = ({
                 title="POS Quick Quote Mode"
               >
                 <Calculator className="w-3.5 h-3.5 text-amber-200" />
-                <span>Quote</span>
+                <span>POS Quote</span>
               </button>
               <button
                 type="button"
@@ -768,11 +777,10 @@ export const ProductViewPosModal: React.FC<ProductViewPosModalProps> = ({
                     ? 'bg-orange-500 text-white shadow-sm border border-orange-400/50'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
-                title="All Master Data & Options View (Admin Only)"
+                title="Full Technical Specifications & Product Master Details"
               >
-                <Info className="w-3.5 h-3.5" />
-                <span>Master</span>
-                {!isHO && <Shield className="w-3 h-3 text-amber-400 ml-0.5" />}
+                <Package className="w-3.5 h-3.5" />
+                <span>Product Specs</span>
               </button>
               <button
                 type="button"
@@ -1612,46 +1620,8 @@ export const ProductViewPosModal: React.FC<ProductViewPosModalProps> = ({
             </div>
           )}
 
-          {/* MODE 2: FULL MASTER DATA VIEW (RESTRICTED TO ADMIN / HO) */}
-          {activeTab === 'view' && !isHO && (
-            <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-8 my-6 text-center space-y-5 max-w-2xl mx-auto shadow-2xl">
-              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center mx-auto shadow-lg">
-                <ShieldCheck className="w-8 h-8 text-amber-400" />
-              </div>
-              <div className="space-y-2">
-                <span className="bg-amber-500/20 text-amber-300 text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-mono font-bold border border-amber-500/30">
-                  ADMINISTRATIVE SECURITY LOCK
-                </span>
-                <h3 className="text-lg font-bold text-white tracking-tight">
-                  Master Specification Data & Surcharge Engine Restricted
-                </h3>
-                <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-                  Central Master Product specifications, head office cost pricing, margin floor rules, and multi-factor surcharge libraries are restricted properties accessible only by <strong>Head Office / Master Administrators</strong> (<span className="font-mono text-amber-300">isHO</span>). Non-admin users cannot view or modify administrative master data.
-                </p>
-              </div>
-              <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-left space-y-2 text-xs">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span>Current Operating Node:</span>
-                  <strong className="text-slate-200 font-mono">Branch Sales Representative</strong>
-                </div>
-                <div className="flex items-center justify-between text-slate-400">
-                  <span>Authorized Permissions:</span>
-                  <span className="text-emerald-400 font-bold">POS Quick Quotation Generator</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveTab('pos')}
-                className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition shadow-md cursor-pointer inline-flex items-center space-x-2"
-              >
-                <Calculator className="w-4 h-4 text-amber-200" />
-                <span>Return to POS Quick Quotation View</span>
-              </button>
-            </div>
-          )}
-
-          {/* MODE 2: FULL MASTER DATA VIEW (7 ENLARGED SPECIFICATION SECTIONS - ADMIN ONLY) */}
-          {activeTab === 'view' && isHO && (
+          {/* MODE 2: FULL MASTER SPECIFICATIONS & DATA VIEW (ALL USERS) */}
+          {activeTab === 'view' && (
             <div className="space-y-6 pb-6">
               
               {/* SECTION 1: IDENTITY & CATEGORY */}
@@ -1687,11 +1657,22 @@ export const ProductViewPosModal: React.FC<ProductViewPosModalProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
                   {/* Thumbnail / Image Preview */}
                   <div className="md:col-span-4 bg-slate-100 border border-slate-200 rounded-xl p-2.5 flex flex-col items-center justify-between text-center space-y-2 h-full min-h-[190px] overflow-hidden">
-                    <div className="w-full flex-1 flex flex-col items-center justify-center bg-white rounded-lg p-4 border border-slate-200/80 shadow-2xs">
-                      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#E87F24] to-[#0F203C] flex items-center justify-center text-white font-mono font-black text-xl shadow-xs mb-2">
-                        {product.product_code.substring(0, 3)}
-                      </div>
-                      <span className="text-[10px] font-mono text-slate-500 font-bold">{product.product_code}</span>
+                    <div className="w-full flex-1 flex flex-col items-center justify-center bg-white rounded-lg p-2 border border-slate-200/80 shadow-2xs overflow-hidden">
+                      {product.image_url ? (
+                        <img
+                          src={product.image_url}
+                          alt={product.product_name}
+                          className="w-full h-36 object-contain rounded-md"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#E87F24] to-[#0F203C] flex items-center justify-center text-white font-mono font-black text-xl shadow-xs mb-2">
+                          {product.product_code.substring(0, 3)}
+                        </div>
+                      )}
+                      <span className="text-[10px] font-mono text-slate-500 font-bold mt-1">{product.product_code}</span>
                     </div>
                     <div className="flex items-center justify-between w-full px-1 text-[10px] font-bold text-slate-500 uppercase">
                       <span>Product Visual Asset</span>
@@ -1800,7 +1781,9 @@ export const ProductViewPosModal: React.FC<ProductViewPosModalProps> = ({
 
                   <div className="bg-slate-50 border border-slate-200 rounded-md p-3">
                     <span className="text-[10px] font-medium text-slate-500 uppercase block">HO Cost Price</span>
-                    <strong className="text-base font-semibold font-mono text-slate-700">Rs. {costPrice.toLocaleString()}</strong>
+                    <strong className="text-base font-semibold font-mono text-slate-700">
+                      {isHO ? `Rs. ${costPrice.toLocaleString()}` : '🔒 HO Protected'}
+                    </strong>
                   </div>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-md p-3">
@@ -1811,7 +1794,7 @@ export const ProductViewPosModal: React.FC<ProductViewPosModalProps> = ({
                   <div className="bg-slate-50 border border-slate-200 rounded-md p-3">
                     <span className="text-[10px] font-medium text-emerald-700 uppercase block">Calculated Margin %</span>
                     <strong className="text-base font-semibold font-mono text-emerald-800">
-                      {basePrice > costPrice ? `${(((basePrice - costPrice) / basePrice) * 100).toFixed(1)}%` : '0.0%'}
+                      {isHO ? (basePrice > costPrice ? `${(((basePrice - costPrice) / basePrice) * 100).toFixed(1)}%` : '0.0%') : 'Standard Active'}
                     </strong>
                   </div>
                 </div>

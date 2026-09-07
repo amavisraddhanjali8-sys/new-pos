@@ -654,95 +654,122 @@ export async function startServer() {
   });
 
   app.post('/api/products', (req, res) => {
-    const pCode = req.body.product_code || `PRD-${Math.floor(1000 + Math.random() * 9000)}`;
-    const basePrice = Number(req.body.base_price || req.body.current_price || 0);
+    try {
+      const pCode = (req.body.product_code || `PRD-${Math.floor(1000 + Math.random() * 9000)}`).trim().toUpperCase();
+      const basePrice = Number(req.body.base_price !== undefined ? req.body.base_price : (req.body.current_price || 0));
 
-    const newProd: Product = {
-      ...req.body,
-      id: req.body.id || `p-${Date.now()}`,
-      product_code: pCode,
-      product_name: req.body.product_name || 'New Product Item',
-      category: req.body.category || 'Aluminium Profiles',
-      sub_category: req.body.sub_category || '',
-      unit: req.body.unit || 'm²',
-      price_display_method: req.body.price_display_method || 'Standard',
-      current_price: basePrice,
-      base_price: basePrice,
-      cost_price: Number(req.body.cost_price || Math.round(basePrice * 0.8)),
-      min_selling_price: Number(req.body.min_selling_price || Math.round(basePrice * 0.9)),
-      unit_weight_kg: Number(req.body.unit_weight_kg) || 1.0,
-      status: req.body.status || 'Active',
-      effective_date: req.body.effective_date || new Date().toISOString().split('T')[0],
-      last_updated: new Date().toLocaleString(),
-      updated_by: req.body.updated_by || 'HO Master Admin',
-      description: req.body.description || ''
-    };
-
-    products.unshift(newProd);
-    saveDatabase();
-
-    broadcastEvent({
-      type: 'PRICE_UPDATE',
-      title: '📦 New Product Registered',
-      message: `${newProd.product_code} (${newProd.product_name}) added at base price Rs. ${newProd.current_price.toLocaleString()}`,
-      product_code: newProd.product_code,
-      new_price: newProd.current_price,
-      branch_name: 'Head Office'
-    });
-
-    res.json(newProd);
-  });
-
-  app.put('/api/products/:id', (req, res) => {
-    const { id } = req.params;
-    const idx = products.findIndex(p => p.id === id || p.product_code === id);
-    if (idx === -1) return res.status(404).json({ error: 'Product not found' });
-
-    const existing = products[idx];
-    const oldPrice = existing.current_price;
-    const newPrice = req.body.new_price !== undefined ? Number(req.body.new_price) : existing.current_price;
-
-    const updatedProduct: Product = {
-      ...existing,
-      ...req.body,
-      current_price: newPrice,
-      old_price: newPrice !== oldPrice ? oldPrice : existing.old_price,
-      last_updated: new Date().toLocaleString(),
-      updated_by: req.body.updated_by || existing.updated_by || 'HO Master Admin'
-    };
-
-    products[idx] = updatedProduct;
-
-    let historyEntry: PriceHistory | undefined;
-    if (newPrice !== oldPrice) {
-      historyEntry = {
-        id: `ph-${Date.now()}`,
-        product_id: updatedProduct.id,
-        product_code: updatedProduct.product_code,
-        product_name: updatedProduct.product_name,
-        old_price: oldPrice,
-        new_price: newPrice,
-        changed_by: req.body.updated_by || 'HO Master Admin',
-        changed_date: new Date().toLocaleString(),
-        reason: req.body.reason || 'Master price update',
-        branch_affected: 'All Branches'
+      const newProd: Product = {
+        ...req.body,
+        id: req.body.id || `p-${Date.now()}`,
+        product_code: pCode,
+        product_name: req.body.product_name || 'New Product Item',
+        category: req.body.category || 'Aluminium Profiles',
+        sub_category: req.body.sub_category || '',
+        unit: req.body.unit || 'm²',
+        price_display_method: req.body.price_display_method || 'Standard',
+        current_price: basePrice,
+        base_price: basePrice,
+        cost_price: Number(req.body.cost_price !== undefined ? req.body.cost_price : Math.round(basePrice * 0.8)),
+        min_selling_price: Number(req.body.min_selling_price !== undefined ? req.body.min_selling_price : Math.round(basePrice * 0.9)),
+        unit_weight_kg: Number(req.body.unit_weight_kg) || 1.0,
+        status: req.body.status || 'Active',
+        effective_date: req.body.effective_date || new Date().toISOString().split('T')[0],
+        last_updated: new Date().toLocaleString(),
+        updated_by: req.body.updated_by || 'HO Master Admin',
+        description: req.body.description || ''
       };
-      priceHistory.unshift(historyEntry);
+
+      products.unshift(newProd);
+      saveDatabase();
 
       broadcastEvent({
         type: 'PRICE_UPDATE',
-        title: '⚡ Master Price Changed',
-        message: `${updatedProduct.product_code} base price changed: Rs. ${oldPrice.toLocaleString()} → Rs. ${newPrice.toLocaleString()}`,
-        product_code: updatedProduct.product_code,
-        old_price: oldPrice,
-        new_price: newPrice,
-        branch_name: 'All Branches'
+        title: '📦 New Product Registered',
+        message: `${newProd.product_code} (${newProd.product_name}) added at base price Rs. ${newProd.current_price.toLocaleString()}`,
+        product_code: newProd.product_code,
+        new_price: newProd.current_price,
+        branch_name: 'Head Office'
       });
+
+      res.status(201).json(newProd);
+    } catch (err: any) {
+      console.error('Error adding product:', err);
+      res.status(500).json({ error: 'Failed to create product: ' + (err?.message || 'Server error') });
     }
+  });
 
-    saveDatabase();
+  app.put('/api/products/:id', (req, res) => {
+    try {
+      const { id } = req.params;
+      const targetId = (id || '').trim().toLowerCase();
+      const idx = products.findIndex(p => 
+        p.id === id || 
+        p.product_code === id || 
+        p.id.toLowerCase() === targetId || 
+        p.product_code.toLowerCase() === targetId
+      );
+      if (idx === -1) return res.status(404).json({ error: 'Product not found' });
 
-    res.json({ product: updatedProduct, history: historyEntry });
+      const existing = products[idx];
+      const oldPrice = existing.current_price || existing.base_price || 0;
+      
+      let newPrice = oldPrice;
+      if (req.body.new_price !== undefined) {
+        newPrice = Number(req.body.new_price);
+      } else if (req.body.base_price !== undefined) {
+        newPrice = Number(req.body.base_price);
+      } else if (req.body.current_price !== undefined) {
+        newPrice = Number(req.body.current_price);
+      }
+
+      const updatedProduct: Product = {
+        ...existing,
+        ...req.body,
+        current_price: newPrice,
+        base_price: req.body.base_price !== undefined ? Number(req.body.base_price) : newPrice,
+        cost_price: req.body.cost_price !== undefined ? Number(req.body.cost_price) : existing.cost_price,
+        min_selling_price: req.body.min_selling_price !== undefined ? Number(req.body.min_selling_price) : existing.min_selling_price,
+        old_price: newPrice !== oldPrice ? oldPrice : existing.old_price,
+        last_updated: new Date().toLocaleString(),
+        updated_by: req.body.updated_by || existing.updated_by || 'HO Master Admin'
+      };
+
+      products[idx] = updatedProduct;
+
+      let historyEntry: PriceHistory | undefined;
+      if (newPrice !== oldPrice) {
+        historyEntry = {
+          id: `ph-${Date.now()}`,
+          product_id: updatedProduct.id,
+          product_code: updatedProduct.product_code,
+          product_name: updatedProduct.product_name,
+          old_price: oldPrice,
+          new_price: newPrice,
+          changed_by: req.body.updated_by || 'HO Master Admin',
+          changed_date: new Date().toLocaleString(),
+          reason: req.body.reason || 'Master price and specification update',
+          branch_affected: 'All Branches'
+        };
+        priceHistory.unshift(historyEntry);
+
+        broadcastEvent({
+          type: 'PRICE_UPDATE',
+          title: '⚡ Master Price Changed',
+          message: `${updatedProduct.product_code} base price changed: Rs. ${oldPrice.toLocaleString()} → Rs. ${newPrice.toLocaleString()}`,
+          product_code: updatedProduct.product_code,
+          old_price: oldPrice,
+          new_price: newPrice,
+          branch_name: 'All Branches'
+        });
+      }
+
+      saveDatabase();
+
+      res.json({ product: updatedProduct, history: historyEntry });
+    } catch (err: any) {
+      console.error('Error updating product:', err);
+      res.status(500).json({ error: 'Failed to update product: ' + (err?.message || 'Server error') });
+    }
   });
 
   app.delete('/api/products/:id', (req, res) => {
